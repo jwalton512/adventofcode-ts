@@ -1,0 +1,59 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { performance } from 'node:perf_hooks'
+
+import { eventDatePath } from '../paths'
+import { dayToString } from '../utils'
+import { DaySolution, InputVariant } from './types'
+
+export type RunResult = {
+  part1?: { value: unknown; ms: number }
+  part2?: { value: unknown; ms: number }
+}
+
+export const readInput = (params: { year: number; day: number; variant?: InputVariant }) => {
+  const { year, day, variant = 'input' } = params
+
+  const filename = variant === 'sample' ? 'sample.txt' : 'input.txt'
+
+  const filePath = join(eventDatePath({ year, day }), filename)
+
+  return readFileSync(filePath, 'utf8').trimEnd()
+}
+
+export const runDay = async (params: {
+  year: number
+  day: number
+  variant?: InputVariant
+}): Promise<RunResult> => {
+  const { year, day, variant = 'input' } = params
+  const dayStr = dayToString(day)
+
+  const modulePath = join(eventDatePath({ year, day }), 'solution.ts')
+
+  const mod = (await import(modulePath)) as { default?: DaySolution }
+  const solution = mod.default
+
+  if (!solution) {
+    throw new Error(`No default DaySolution export found for ${year}/day${dayStr}`)
+  }
+
+  const input = readInput({ year, day, variant })
+  const result: RunResult = {}
+
+  if (solution.part1) {
+    const t0 = performance.now()
+    const value = solution.part1(input)
+    const t1 = performance.now()
+    result.part1 = { value, ms: t1 - t0 }
+  }
+
+  if (solution.part2) {
+    const t0 = performance.now()
+    const value = solution.part2(input)
+    const t1 = performance.now()
+    result.part2 = { value, ms: t1 - t0 }
+  }
+
+  return result
+}
