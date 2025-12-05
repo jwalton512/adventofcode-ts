@@ -11,7 +11,11 @@ export type RunResult = {
   part2?: { value: unknown; ms: number }
 }
 
-export const readInput = (params: { year: number; day: number; variant?: InputVariant }) => {
+export const readInput = (params: {
+  year: number
+  day: number
+  variant?: InputVariant
+}) => {
   const { year, day, variant = 'input' } = params
 
   const filename = variant === 'sample' ? 'sample.txt' : 'input.txt'
@@ -24,9 +28,10 @@ export const readInput = (params: { year: number; day: number; variant?: InputVa
 export const runDay = async (params: {
   year: number
   day: number
+  part?: number
   variant?: InputVariant
 }): Promise<RunResult> => {
-  const { year, day, variant = 'input' } = params
+  const { year, day, part, variant = 'input' } = params
   const dayStr = dayToString(day)
 
   const modulePath = join(eventDatePath({ year, day }), 'solution.ts')
@@ -35,20 +40,25 @@ export const runDay = async (params: {
   const solution = mod.default
 
   if (!solution) {
-    throw new Error(`No default DaySolution export found for ${year}/day${dayStr}`)
+    throw new Error(
+      `No default DaySolution export found for ${year}/day${dayStr}`,
+    )
   }
 
   const input = readInput({ year, day, variant })
   const result: RunResult = {}
 
-  if (solution.part1) {
+  const runPart1 = part === undefined || part === 1
+  const runPart2 = part === undefined || part === 2
+
+  if (runPart1 && solution.part1) {
     const t0 = performance.now()
     const value = solution.part1(input)
     const t1 = performance.now()
     result.part1 = { value, ms: t1 - t0 }
   }
 
-  if (solution.part2) {
+  if (runPart2 && solution.part2) {
     const t0 = performance.now()
     const value = solution.part2(input)
     const t1 = performance.now()

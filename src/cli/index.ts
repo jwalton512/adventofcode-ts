@@ -25,11 +25,14 @@ program
   .description('Run solution for a specific event')
   .argument('<year>', 'Year (e.g. 2025)', value => Number.parseInt(value, 10))
   .argument('<day>', 'Day (1-25)', value => Number.parseInt(value, 10))
-  .option('-s, --sample', 'Run with sample data instead of input')
+  .option('-p, --part <part>', 'specific part to run (1 or 2)', value =>
+    Number.parseInt(value, 10),
+  )
+  .option('-s, --sample', 'run with sample data instead of input')
   .action(async (year, day, options) => {
     const variant = options.sample ? 'sample' : 'input'
 
-    const results = await runDay({ year, day, variant })
+    const results = await runDay({ year, day, part: options.part, variant })
 
     console.log(`Year ${year}, Day ${day}, variant=${variant}`)
 
