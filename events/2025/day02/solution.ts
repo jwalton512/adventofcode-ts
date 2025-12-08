@@ -1,7 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import type { DaySolution } from '../../../src/aoc/types'
-import { dirname, join } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { runSolution } from '../../../src/aoc/runner'
+import { isMainModule } from '../../../src/utils'
 
 type Range = { start: number; end: number }
 
@@ -62,18 +61,6 @@ const solution: DaySolution = {
 
 export default solution
 
-const main = () => {
-  const filePath = fileURLToPath(import.meta.url)
-  const dir = dirname(filePath)
-  const inputPath = join(dir, 'input.txt')
-
-  const raw = readFileSync(inputPath, 'utf8').trimEnd()
-
-  console.log(`Running: ${inputPath}`)
-  console.log('Part 1:', part1(raw))
-  console.log('Part 2:', part2(raw))
-}
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  main()
+if (isMainModule(import.meta.url)) {
+  runSolution(solution, import.meta.url)
 }

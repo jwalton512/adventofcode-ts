@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { performance } from 'node:perf_hooks'
+import { fileURLToPath } from 'node:url'
 
 import { eventDatePath } from '../paths'
-import { dayToString } from '../utils'
+import { dayToString, eventDateFromModule } from '../utils'
 import { DaySolution, InputVariant } from './types'
 
 export type RunResult = {
@@ -23,6 +24,32 @@ export const readInput = (params: {
   const filePath = join(eventDatePath({ year, day }), filename)
 
   return readFileSync(filePath, 'utf8').trimEnd()
+}
+
+export const runSolution = (
+  solution: DaySolution,
+  moduleUrl: string,
+  variant: InputVariant = 'input',
+) => {
+  const eventDate = eventDateFromModule(moduleUrl)
+
+  const input =
+    eventDate !== null
+      ? readInput({ ...eventDate, variant })
+      : readFileSync(
+          join(dirname(fileURLToPath(moduleUrl)), 'input.txt'),
+          'utf8',
+        ).trimEnd()
+
+  console.log(
+    `Running: ${
+      eventDate
+        ? join(eventDatePath(eventDate), `${variant}.txt`)
+        : join(dirname(fileURLToPath(moduleUrl)), 'input.txt')
+    }`,
+  )
+  if (solution.part1) console.log('Part 1:', solution.part1(input))
+  if (solution.part2) console.log('Part 2:', solution.part2(input))
 }
 
 export const runDay = async (params: {
