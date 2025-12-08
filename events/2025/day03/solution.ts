@@ -1,5 +1,5 @@
-import type { DaySolution } from '../../../src/aoc/types'
 import { runSolution } from '../../../src/aoc/runner'
+import type { DaySolution } from '../../../src/aoc/types'
 import { isMainModule } from '../../../src/utils'
 
 type Bank = number[]
