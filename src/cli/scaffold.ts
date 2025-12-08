@@ -12,8 +12,9 @@ const ensureDir = (path: string) => {
   }
 }
 
-const solutionTemplate = `import type { DaySolution } from '../../../src/aoc/types'
-import { isMainModule, runSolution } from '../../../src/aoc/runner'
+const solutionTemplate = `import { runSolution } from '../../../src/aoc/runner'
+import type { DaySolution } from '../../../src/aoc/types'
+import { isMainModule } from '../../../src/utils'
 
 const parseInput = (raw: string) => {
   return raw.split('\\n')
