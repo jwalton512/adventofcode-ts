@@ -17,7 +17,10 @@ export type SubmitResult =
 
 export type AocClient = {
   getInput: (eventDate: EventDate) => Promise<string>
-  postSolution: (eventSolutionPart: EventSolutionPart, solution: number) => Promise<SubmitResult>
+  postSolution: (
+    eventSolutionPart: EventSolutionPart,
+    solution: number,
+  ) => Promise<SubmitResult>
 }
 
 export const getAocClient = (token: string, userAgent: string): AocClient => {
@@ -36,12 +39,39 @@ export const getAocClient = (token: string, userAgent: string): AocClient => {
   return {
     getInput: async (eventDate: EventDate): Promise<string> => {
       const url = eventDateUrl(eventDate, 'input')
-      const resp = await client.get(url, { responseType: 'text' })
 
-      if (resp.status !== 200)
-        throw new Error(`AoC input request failed (${resp.status} ${resp.statusText}) for ${url}`)
+      try {
+        const resp = await client.get<string>(url, { responseType: 'text' })
+        return resp.data.toString().trimEnd()
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status
+          const statusText = err.response?.statusText
+          const hint =
+            status === 400 || status === 401 || status === 403
+              ? [
+                  '',
+                  'Likely cause: your Advent of Code session cookie is missing/expired.',
+                  'Fix: update AOC_SESSION in your .env (the value of the `session` cookie).',
+                ].join('\n')
+              : ''
 
-      return resp.data.toString().trimEnd()
+          throw new Error(
+            [
+              `AoC input request failed (${status ?? 'no status'} ${statusText})`,
+              `URL: ${url}`,
+              err.message,
+              hint,
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          )
+        }
+
+        throw err instanceof Error
+          ? err
+          : new Error(`AoC input request failed: ${String(err)}`)
+      }
     },
 
     postSolution: async (
