@@ -52,7 +52,7 @@ export const getAocClient = (token: string, userAgent: string): AocClient => {
               ? [
                   '',
                   'Likely cause: your Advent of Code session cookie is missing/expired.',
-                  'Fix: update AOC_SESSION in your .env (the value of the `session` cookie).',
+                  'Fix: update AOC_TOKEN in your .env (the value of the `session` cookie).',
                 ].join('\n')
               : ''
 
