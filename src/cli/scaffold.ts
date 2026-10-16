@@ -1,16 +1,11 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { ensureInput } from '../aoc/input'
 import { EventDate } from '../aoc/types'
 import { eventDatePath } from '../paths'
-import { dayToString } from '../utils'
-import { createAocClient } from './utils'
-
-const ensureDir = (path: string) => {
-  if (!existsSync(path)) {
-    mkdirSync(path, { recursive: true })
-  }
-}
+import { dayToString, ensureDir } from '../utils'
+import { downloadInput } from './utils'
 
 const solutionTemplate = `import { runSolution } from '../../../src/aoc/runner'
 import type { DaySolution } from '../../../src/aoc/types'
@@ -42,18 +37,13 @@ if (isMainModule(import.meta.url)) {
 }
 `
 
-export const scaffoldDay = (eventDate: EventDate) => {
+export const scaffoldDay = async (eventDate: EventDate) => {
   const baseDir = eventDatePath(eventDate)
 
   ensureDir(baseDir)
 
-  const inputPath = join(baseDir, 'input.txt')
   const samplePath = join(baseDir, 'sample.txt')
   const solutionPath = join(baseDir, 'solution.ts')
-
-  if (!existsSync(inputPath)) {
-    writeFileSync(inputPath, '', { encoding: 'utf8' })
-  }
 
   if (!existsSync(samplePath)) {
     writeFileSync(samplePath, '', { encoding: 'utf8' })
@@ -63,23 +53,24 @@ export const scaffoldDay = (eventDate: EventDate) => {
     writeFileSync(solutionPath, solutionTemplate, { encoding: 'utf8' })
   }
 
+  const { inputPath, downloaded } = await ensureInput(eventDate, downloadInput)
+
   return {
     baseDir,
     inputPath,
+    downloaded,
     samplePath,
     solutionPath,
   }
 }
 
 export const scaffoldDayAndDownload = async (eventDate: EventDate) => {
-  const { year, day } = eventDate
-  const paths = scaffoldDay({ year, day })
-  console.log(`Scaffolded year ${year} day ${dayToString(day)}`)
+  const scaffold = await scaffoldDay(eventDate)
+  console.log(
+    `Scaffolded year ${eventDate.year} day ${dayToString(eventDate.day)}`,
+  )
 
-  const client = createAocClient()
-
-  const data = await client.getInput({ year, day })
-
-  writeFileSync(paths.inputPath, data, { encoding: 'utf8' })
-  console.log(`Downloaded input to ${paths.inputPath}`)
+  if (scaffold.downloaded) {
+    console.log(`Downloaded input to ${scaffold.inputPath}`)
+  }
 }

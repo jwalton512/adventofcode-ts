@@ -1,3 +1,4 @@
+import { existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { EventDate } from './aoc/types'
@@ -15,4 +16,10 @@ export const eventDateFromModule = (moduleUrl: string): EventDate | null => {
   if (!match) return null
   const [, year, day] = match
   return { year: Number(year), day: Number(day) }
+}
+
+export const ensureDir = (path: string) => {
+  if (!existsSync(path)) {
+    mkdirSync(path, { recursive: true })
+  }
 }

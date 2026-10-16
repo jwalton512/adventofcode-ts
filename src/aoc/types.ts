@@ -2,7 +2,7 @@ export type EventDate = { year: number; day: number }
 
 export type SolutionPart = 1 | 2
 
-export type PartFn = (input: string) => unknown
+export type PartFn = (input: string) => string | number | bigint
 
 export type DaySolution = {
   part1?: PartFn

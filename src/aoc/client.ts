@@ -87,11 +87,29 @@ export const getAocClient = (token: string, userAgent: string): AocClient => {
         answer: String(solution),
       })
 
-      const resp = await client.post(url, body.toString(), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      })
+      const resp = await client
+        .post(url, body.toString(), {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        })
+        .catch((err: unknown) => {
+          if (axios.isAxiosError(err)) {
+            const status = err.response?.status
+            const reason =
+              status !== undefined
+                ? `HTTP ${status}`
+                : err.code === 'ECONNABORTED'
+                  ? 'request timed out'
+                  : 'network request failed'
+
+            throw new Error(
+              `AoC solution submission failed for ${url}: ${reason}`,
+            )
+          }
+
+          throw new Error(`AoC solution submission failed for ${url}`)
+        })
 
       if (resp.status !== 200)
         throw new Error(
@@ -113,7 +131,11 @@ export const getAocClient = (token: string, userAgent: string): AocClient => {
         return { kind: 'correct' }
       }
 
-      return { kind: 'incorrect' }
+      if (respText.includes("that's not the right answer")) {
+        return { kind: 'incorrect' }
+      }
+
+      throw new Error('AoC returned an unrecognized submission response')
     },
   }
 }

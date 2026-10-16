@@ -5,11 +5,22 @@ import { fileURLToPath } from 'node:url'
 
 import { eventDatePath } from '../paths'
 import { dayToString, eventDateFromModule } from '../utils'
-import { DaySolution, InputVariant } from './types'
+import { DaySolution, InputVariant, PartFn, SolutionPart } from './types'
+
+export type PartResult = {
+  value: unknown
+  elapsedMs: number
+}
 
 export type RunResult = {
-  part1?: { value: unknown; ms: number }
-  part2?: { value: unknown; ms: number }
+  part1?: PartResult
+  part2?: PartResult
+}
+
+type RunOptions = {
+  year: number
+  day: number
+  variant?: InputVariant
 }
 
 export const readInput = (params: {
@@ -24,6 +35,50 @@ export const readInput = (params: {
   const filePath = join(eventDatePath({ year, day }), filename)
 
   return readFileSync(filePath, 'utf8').trimEnd()
+}
+
+const loadDay = async (options: RunOptions) => {
+  const { year, day } = options
+  const modulePath = join(eventDatePath({ year, day }), 'solution.ts')
+  const mod = (await import(modulePath)) as {
+    default?: DaySolution
+  }
+
+  if (!mod.default) {
+    throw new Error(
+      `No default DaySolution export found for ${year}/day${dayToString(day)}`,
+    )
+  }
+
+  return {
+    solution: mod.default,
+    input: readInput(options),
+  }
+}
+
+const executePart = (fn: PartFn, input: string): PartResult => {
+  const start = performance.now()
+  const value = fn(input)
+
+  return {
+    value,
+    elapsedMs: performance.now() - start,
+  }
+}
+
+export const runPart = async (
+  options: RunOptions & { part: SolutionPart },
+): Promise<PartResult> => {
+  const { solution, input } = await loadDay(options)
+  const fn = solution[`part${options.part}`]
+
+  if (!fn) {
+    throw new Error(
+      `Part ${options.part} is not implemented for ${options.year}/day${dayToString(options.day)}`,
+    )
+  }
+
+  return executePart(fn, input)
 }
 
 export const runSolution = (
@@ -52,45 +107,17 @@ export const runSolution = (
   if (solution.part2) console.log('Part 2:', solution.part2(input))
 }
 
-export const runDay = async (params: {
-  year: number
-  day: number
-  part?: number
-  variant?: InputVariant
-}): Promise<RunResult> => {
-  const { year, day, part, variant = 'input' } = params
-  const dayStr = dayToString(day)
+export const runDay = async (options: RunOptions): Promise<RunResult> => {
+  const { solution, input } = await loadDay(options)
+  const results: RunResult = {}
 
-  const modulePath = join(eventDatePath({ year, day }), 'solution.ts')
-
-  const mod = (await import(modulePath)) as { default?: DaySolution }
-  const solution = mod.default
-
-  if (!solution) {
-    throw new Error(
-      `No default DaySolution export found for ${year}/day${dayStr}`,
-    )
+  if (solution.part1) {
+    results.part1 = executePart(solution.part1, input)
   }
 
-  const input = readInput({ year, day, variant })
-  const result: RunResult = {}
-
-  const runPart1 = part === undefined || part === 1
-  const runPart2 = part === undefined || part === 2
-
-  if (runPart1 && solution.part1) {
-    const t0 = performance.now()
-    const value = solution.part1(input)
-    const t1 = performance.now()
-    result.part1 = { value, ms: t1 - t0 }
+  if (solution.part2) {
+    results.part2 = executePart(solution.part2, input)
   }
 
-  if (runPart2 && solution.part2) {
-    const t0 = performance.now()
-    const value = solution.part2(input)
-    const t1 = performance.now()
-    result.part2 = { value, ms: t1 - t0 }
-  }
-
-  return result
+  return results
 }

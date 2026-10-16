@@ -8,6 +8,7 @@ import importPlugin from 'eslint-plugin-import'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import unusedImports from 'eslint-plugin-unused-imports'
 import prettier from 'eslint-config-prettier'
+import prettierRecommended from 'eslint-plugin-prettier/recommended'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -71,6 +72,5 @@ export default [
     },
   },
 
-  // Prettier last to turn off conflicting stylistic rules
-  prettier,
+  prettierRecommended,
 ]
