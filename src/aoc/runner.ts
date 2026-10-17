@@ -5,7 +5,13 @@ import { fileURLToPath } from 'node:url'
 
 import { eventDatePath } from '../paths'
 import { dayToString, eventDateFromModule } from '../utils'
-import { DaySolution, InputVariant, PartFn, SolutionPart } from './types'
+import {
+  DaySolution,
+  EventDate,
+  InputVariant,
+  PartFn,
+  SolutionPart,
+} from './types'
 
 export type PartResult = {
   value: unknown
@@ -17,29 +23,27 @@ export type RunResult = {
   part2?: PartResult
 }
 
-type RunOptions = {
-  year: number
-  day: number
+type RunArguments = {
+  eventDate: EventDate
   variant?: InputVariant
 }
 
 export const readInput = (params: {
-  year: number
-  day: number
+  eventDate: EventDate
   variant?: InputVariant
 }) => {
-  const { year, day, variant = 'input' } = params
+  const { eventDate, variant = 'input' } = params
 
   const filename = variant === 'sample' ? 'sample.txt' : 'input.txt'
 
-  const filePath = join(eventDatePath({ year, day }), filename)
+  const filePath = join(eventDatePath(eventDate), filename)
 
   return readFileSync(filePath, 'utf8').trimEnd()
 }
 
-const loadDay = async (options: RunOptions) => {
-  const { year, day } = options
-  const modulePath = join(eventDatePath({ year, day }), 'solution.ts')
+const loadDay = async (args: RunArguments) => {
+  const { year, day } = args.eventDate
+  const modulePath = join(eventDatePath(args.eventDate), 'solution.ts')
   const mod = (await import(modulePath)) as {
     default?: DaySolution
   }
@@ -52,7 +56,7 @@ const loadDay = async (options: RunOptions) => {
 
   return {
     solution: mod.default,
-    input: readInput(options),
+    input: readInput(args),
   }
 }
 
@@ -67,14 +71,14 @@ const executePart = (fn: PartFn, input: string): PartResult => {
 }
 
 export const runPart = async (
-  options: RunOptions & { part: SolutionPart },
+  options: RunArguments & { part: SolutionPart },
 ): Promise<PartResult> => {
   const { solution, input } = await loadDay(options)
   const fn = solution[`part${options.part}`]
 
   if (!fn) {
     throw new Error(
-      `Part ${options.part} is not implemented for ${options.year}/day${dayToString(options.day)}`,
+      `Part ${options.part} is not implemented for ${options.eventDate.year}/day${dayToString(options.eventDate.day)}`,
     )
   }
 
@@ -90,7 +94,7 @@ export const runSolution = (
 
   const input =
     eventDate !== null
-      ? readInput({ ...eventDate, variant })
+      ? readInput({ eventDate, variant })
       : readFileSync(
           join(dirname(fileURLToPath(moduleUrl)), 'input.txt'),
           'utf8',
@@ -107,7 +111,7 @@ export const runSolution = (
   if (solution.part2) console.log('Part 2:', solution.part2(input))
 }
 
-export const runDay = async (options: RunOptions): Promise<RunResult> => {
+export const runDay = async (options: RunArguments): Promise<RunResult> => {
   const { solution, input } = await loadDay(options)
   const results: RunResult = {}
 
