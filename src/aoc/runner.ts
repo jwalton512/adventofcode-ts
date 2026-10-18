@@ -14,7 +14,7 @@ import {
 } from './types'
 
 export type PartResult = {
-  value: unknown
+  value: ReturnType<PartFn>
   elapsedMs: number
 }
 
@@ -70,6 +70,30 @@ const executePart = (fn: PartFn, input: string): PartResult => {
   }
 }
 
+const executeSolution = (
+  solution: DaySolution,
+  input: string,
+  part?: SolutionPart,
+): RunResult => {
+  const results: RunResult = {}
+  const parts: SolutionPart[] = part === undefined ? [1, 2] : [part]
+
+  for (const selectedPart of parts) {
+    const key = `part${selectedPart}` as const
+    const fn = solution[key]
+
+    if (!fn) {
+      if (part !== undefined) {
+        throw new Error(`Part ${part} not implemented`)
+      }
+      continue
+    }
+
+    results[key] = executePart(fn, input)
+  }
+  return results
+}
+
 export const runPart = async (
   options: RunArguments & { part: SolutionPart },
 ): Promise<PartResult> => {
@@ -82,21 +106,22 @@ export const runPart = async (
     )
   }
 
-  return executePart(fn, input)
+  const results = executeSolution(solution, input, options.part)
+  return results[`part${options.part}`]!
 }
 
 export const runSolution = (
   solution: DaySolution,
   moduleUrl: string,
   variant: InputVariant = 'input',
-) => {
+): RunResult => {
   const eventDate = eventDateFromModule(moduleUrl)
 
   const input =
     eventDate !== null
       ? readInput({ eventDate, variant })
       : readFileSync(
-          join(dirname(fileURLToPath(moduleUrl)), 'input.txt'),
+          join(dirname(fileURLToPath(moduleUrl)), `${variant}.txt`),
           'utf8',
         ).trimEnd()
 
@@ -104,24 +129,29 @@ export const runSolution = (
     `Running: ${
       eventDate
         ? join(eventDatePath(eventDate), `${variant}.txt`)
-        : join(dirname(fileURLToPath(moduleUrl)), 'input.txt')
+        : join(dirname(fileURLToPath(moduleUrl)), `${variant}.txt`)
     }`,
   )
-  if (solution.part1) console.log('Part 1:', solution.part1(input))
-  if (solution.part2) console.log('Part 2:', solution.part2(input))
+
+  const result = executeSolution(solution, input)
+  printResult(result)
+
+  return result
 }
 
 export const runDay = async (options: RunArguments): Promise<RunResult> => {
   const { solution, input } = await loadDay(options)
-  const results: RunResult = {}
 
-  if (solution.part1) {
-    results.part1 = executePart(solution.part1, input)
+  return executeSolution(solution, input)
+}
+
+export const printResult = (result: RunResult) => {
+  for (const part of [1, 2] as const) {
+    const partResult = result[`part${part}`]
+    if (!partResult) continue
+
+    console.log(
+      `Part ${part}: ${String(partResult.value)} (${partResult.elapsedMs.toFixed(2)} ms)`,
+    )
   }
-
-  if (solution.part2) {
-    results.part2 = executePart(solution.part2, input)
-  }
-
-  return results
 }

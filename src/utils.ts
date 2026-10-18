@@ -12,7 +12,9 @@ export const isMainModule = (moduleUrl: string) =>
 
 export const eventDateFromModule = (moduleUrl: string): EventDate | null => {
   const filePath = fileURLToPath(moduleUrl)
-  const match = filePath.match(/[/\\]events[/\\](\\d{4})[/\\]day(\\d{2})/)
+  const match = filePath.match(
+    /[/\\]events[/\\](\d{4})[/\\]day(\d{2})(?:[/\\]|$)/,
+  )
   if (!match) return null
   const [, year, day] = match
   return { year: Number(year), day: Number(day) }
