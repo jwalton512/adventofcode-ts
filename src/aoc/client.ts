@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { EventDate, EventSolutionPart } from './types'
+import { Answer, EventDate, EventSolutionPart } from './types'
 
 const BASE_URL = 'https://adventofcode.com'
 
@@ -19,7 +19,7 @@ export type AocClient = {
   getInput: (eventDate: EventDate) => Promise<string>
   postSolution: (
     eventSolutionPart: EventSolutionPart,
-    solution: number,
+    solution: Answer,
   ) => Promise<SubmitResult>
 }
 
@@ -76,7 +76,7 @@ export const getAocClient = (token: string, userAgent: string): AocClient => {
 
     postSolution: async (
       eventSolutionPart: EventSolutionPart,
-      solution: number,
+      solution: Answer,
     ): Promise<SubmitResult> => {
       const { eventDate, part } = eventSolutionPart
 

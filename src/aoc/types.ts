@@ -4,7 +4,8 @@ export const SOLUTION_PARTS = [1, 2] as const
 
 export type SolutionPart = (typeof SOLUTION_PARTS)[number]
 
-export type PartFn = (input: string) => string | number | bigint
+export type Answer = string | number | bigint
+export type PartFn = (input: string) => Answer
 
 export type DaySolution = {
   part1?: PartFn

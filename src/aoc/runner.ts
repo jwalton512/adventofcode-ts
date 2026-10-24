@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { eventDatePath } from '../paths'
 import { dayToString, eventDateFromModule } from '../utils'
 import {
+  Answer,
   DaySolution,
   EventDate,
   InputVariant,
@@ -14,7 +15,7 @@ import {
 } from './types'
 
 export type PartResult = {
-  value: ReturnType<PartFn>
+  value: Answer
   elapsedMs: number
 }
 

@@ -1,7 +1,12 @@
 import { Command } from 'commander'
 
 import { runPart } from '../../aoc/runner'
-import { EventDate, EventSolutionPart, SolutionPart } from '../../aoc/types'
+import {
+  Answer,
+  EventDate,
+  EventSolutionPart,
+  SolutionPart,
+} from '../../aoc/types'
 import { parseDay, parsePart, parseYear } from '../arguments'
 import { createAocClient } from '../utils'
 
@@ -18,14 +23,18 @@ export const createSubmitCommand = () => {
         throw new Error(`No answer returned for part ${part}`)
       }
 
+      if (typeof result.value === 'number' && !Number.isFinite(result.value)) {
+        throw new Error(`Answer for part ${part} must be a finite number`)
+      }
+
       const eventDate: EventDate = { year, day }
-      await submitSolution({ eventDate, part }, result.value as number)
+      await submitSolution({ eventDate, part }, result.value)
     })
 }
 
 const submitSolution = async (
   eventSolutionPart: EventSolutionPart,
-  solution: number,
+  solution: Answer,
 ) => {
   const client = createAocClient()
   const result = await client.postSolution(eventSolutionPart, solution)
