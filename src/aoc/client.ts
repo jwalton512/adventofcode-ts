@@ -42,7 +42,7 @@ export const getAocClient = (token: string, userAgent: string): AocClient => {
 
       try {
         const resp = await client.get<string>(url, { responseType: 'text' })
-        return resp.data.toString().trimEnd()
+        return resp.data.toString()
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           const status = err.response?.status

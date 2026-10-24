@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'node:url'
 
 import { eventDatePath } from '../paths'
 import { dayToString, eventDateFromModule } from '../utils'
+import { inputFilePath, readInput, readInputFile } from './input'
 import {
   Answer,
   DaySolution,
@@ -29,18 +29,7 @@ type RunArguments = {
   variant?: InputVariant
 }
 
-export const readInput = (params: {
-  eventDate: EventDate
-  variant?: InputVariant
-}) => {
-  const { eventDate, variant = 'input' } = params
-
-  const filename = variant === 'sample' ? 'sample.txt' : 'input.txt'
-
-  const filePath = join(eventDatePath(eventDate), filename)
-
-  return readFileSync(filePath, 'utf8').trimEnd()
-}
+export { readInput } from './input'
 
 const loadDay = async (args: RunArguments) => {
   const { year, day } = args.eventDate
@@ -118,21 +107,13 @@ export const runSolution = (
 ): RunResult => {
   const eventDate = eventDateFromModule(moduleUrl)
 
-  const input =
-    eventDate !== null
-      ? readInput({ eventDate, variant })
-      : readFileSync(
-          join(dirname(fileURLToPath(moduleUrl)), `${variant}.txt`),
-          'utf8',
-        ).trimEnd()
-
-  console.log(
-    `Running: ${
-      eventDate
-        ? join(eventDatePath(eventDate), `${variant}.txt`)
-        : join(dirname(fileURLToPath(moduleUrl)), `${variant}.txt`)
-    }`,
+  const filePath = inputFilePath(
+    eventDate ? eventDatePath(eventDate) : dirname(fileURLToPath(moduleUrl)),
+    variant,
   )
+  const input = readInputFile(filePath)
+
+  console.log(`Running: ${filePath}`)
 
   const result = executeSolution(solution, input)
   printResult(result)
