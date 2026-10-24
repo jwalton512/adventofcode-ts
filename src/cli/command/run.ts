@@ -3,16 +3,15 @@ import { Command } from 'commander'
 import { ensureInput } from '../../aoc/input'
 import { runDay, runPart } from '../../aoc/runner'
 import { EventDate, InputVariant, SolutionPart } from '../../aoc/types'
+import { parseDay, parsePart, parseYear } from '../arguments'
 import { downloadInput } from '../utils'
 
 export const createRunCommand = () => {
   return new Command('run')
     .description('Run solution for a specific event')
-    .argument('<year>', 'Year (e.g. 2025)', value => Number.parseInt(value, 10))
-    .argument('<day>', 'Day (1-25)', value => Number.parseInt(value, 10))
-    .option('-p, --part <part>', 'specific part to run (1 or 2)', value =>
-      Number.parseInt(value, 10),
-    )
+    .argument('<year>', 'Year (e.g. 2025)', parseYear)
+    .argument('<day>', 'Day (1-25)', parseDay)
+    .option('-p, --part <part>', 'Part to run', parsePart)
     .option('-s, --sample', 'run with sample data instead of input')
     .action(async (year, day, options) => {
       await runSolution({ year, day }, options.part, options.sample ?? false)

@@ -1,6 +1,8 @@
 export type EventDate = { year: number; day: number }
 
-export type SolutionPart = 1 | 2
+export const SOLUTION_PARTS = [1, 2] as const
+
+export type SolutionPart = (typeof SOLUTION_PARTS)[number]
 
 export type PartFn = (input: string) => string | number | bigint
 

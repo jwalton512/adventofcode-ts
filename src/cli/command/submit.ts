@@ -1,19 +1,16 @@
-import { Argument, Command } from 'commander'
+import { Command } from 'commander'
 
 import { runPart } from '../../aoc/runner'
 import { EventDate, EventSolutionPart, SolutionPart } from '../../aoc/types'
+import { parseDay, parsePart, parseYear } from '../arguments'
 import { createAocClient } from '../utils'
 
 export const createSubmitCommand = () => {
   return new Command('submit')
     .description('Submit solution for review')
-    .argument('<year>', 'Year (e.g. 2025)', value => Number.parseInt(value, 10))
-    .argument('<day>', 'Day (1-25)', value => Number.parseInt(value, 10))
-    .addArgument(
-      new Argument('<part>', 'Part (1 or 2)')
-        .choices(['1', '2'])
-        .argParser(value => Number.parseInt(value, 10)),
-    )
+    .argument('<year>', 'Year (e.g. 2025)', parseYear)
+    .argument('<day>', 'Day (1-25)', parseDay)
+    .argument('<part>', 'Part to submit', parsePart)
     .action(async (year: number, day: number, part: SolutionPart) => {
       const result = await runPart({ eventDate: { year, day }, part })
 

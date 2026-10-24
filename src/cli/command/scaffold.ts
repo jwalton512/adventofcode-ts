@@ -7,14 +7,15 @@ import { ensureInput } from '../../aoc/input'
 import { EventDate } from '../../aoc/types'
 import { eventDatePath } from '../../paths'
 import { dayToString, ensureDir } from '../../utils'
+import { parseDay, parseYear } from '../arguments'
 import { solutionTemplate } from '../templates'
 import { downloadInput } from '../utils'
 
 export const createScaffoldCommand = () => {
   return new Command('scaffold')
     .description('Scaffold event folders and solution templates')
-    .argument('<year>', 'Year (e.g. 2025)', value => Number.parseInt(value, 10))
-    .argument('<day>', 'Day (1-25)', value => Number.parseInt(value, 10))
+    .argument('<year>', 'Year (e.g. 2025)', parseYear)
+    .argument('<day>', 'Day (1-25)', parseDay)
     .action(async (year, day) => {
       await scaffoldDayAndDownload({ year, day })
     })
