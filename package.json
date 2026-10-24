@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
     "aoc": "tsx src/cli/index.ts",
     "aoc:scaffold": "tsx src/cli/index.ts scaffold",
     "aoc:run": "tsx src/cli/index.ts run"

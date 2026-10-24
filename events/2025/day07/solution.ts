@@ -7,13 +7,15 @@ const parseInput = (raw: string) => {
 }
 
 const part1 = (raw: string): number => {
-  const lines = parseInput(raw)
+  const _lines = parseInput(raw)
   // TODO: implement part 1
+  throw new Error('Part 1 is not implemented')
 }
 
 const part2 = (raw: string): number => {
-  const lines = parseInput(raw)
+  const _lines = parseInput(raw)
   // TODO: implement part 2
+  throw new Error('Part 2 is not implemented')
 }
 
 const solution: DaySolution = {
